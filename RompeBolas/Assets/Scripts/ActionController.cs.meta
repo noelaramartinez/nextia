@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 2d68652b587e3bb479af5ccb1f2672a6
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - block: {fileID: 6227547165151244522, guid: 5b62ea6f0ca2f8e48b715853e29d7b16, type: 3}
+  - Apple: {fileID: 5969382707199139921, guid: ee93d60486499cb4e9e6a477835ac69b, type: 3}
+  - StrawBerry: {fileID: 2457203860956651173, guid: eaac380c3cb87f6418400d0a3f9d70e0,
+      type: 3}
+  - Banana: {fileID: 4182181044858151002, guid: 20ac1e5bb3a4b9b4bb7a0fde5346b962,
+      type: 3}
+  - Cherry: {fileID: 5426687192275803216, guid: 06781359d00376d40ae1defecfc8c19d,
+      type: 3}
+  - Orange: {fileID: 5770233231582809049, guid: e954dc51a1099d44ca7e2a87758eecbf,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
