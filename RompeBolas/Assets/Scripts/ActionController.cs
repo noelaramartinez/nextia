@@ -26,6 +26,7 @@ public class ActionController : MonoBehaviour
     private bool isGoingUp = true;
     private bool isGoingLeft = true;
     private bool isGoingDown = true;
+    private bool isReleased = true;
     public static ActionController instance;
 
     public ActionController()
@@ -67,6 +68,7 @@ public class ActionController : MonoBehaviour
                     {
                         go = Instantiate(fruit);
                         go.layer = 8;
+                        go.SetActive(false);
                         ActionBlock ab = CreateActionBlock(go, index++);
                         GameController.instance.Q.Enqueue(ab);
                     }
@@ -174,43 +176,55 @@ public class ActionController : MonoBehaviour
     void OnMouseDown()
     {
         SelectInstanceOfElement(gameObject);
+        
         if (gameObject.name.Contains(GameController.instance.Apple.name))
         {
-            print(GameController.instance.Apple.name);
+            Debug.Log(GameController.instance.Apple.name);
         }
         else if (gameObject.name.Contains(GameController.instance.Banana.name))
         {
-            print(GameController.instance.Banana.name);
+            Debug.Log(GameController.instance.Banana.name);
             
         }
         else if (gameObject.name.Contains(GameController.instance.Cherry.name))
         {
-            print(GameController.instance.Cherry.name);
+            Debug.Log(GameController.instance.Cherry.name);
         }
         else if (gameObject.name.Contains(GameController.instance.Orange.name))
         {
-            print(GameController.instance.Orange.name);
+            Debug.Log(GameController.instance.Orange.name);
         }
         else if (gameObject.name.Contains(GameController.instance.StrawBerry.name))
         {
-            print(GameController.instance.StrawBerry.name);
+            Debug.Log(GameController.instance.StrawBerry.name);
         }
     }
 
     void OnTriggerEnter2D(Collider2D col)
     {
-        Debug.Log("interseccion con: " + col.attachedRigidbody.gameObject.GetInstanceID());
-
+        if(instanceElement != null)
+        {
+            if (!instanceElement.GetInstanceID().
+            Equals(col.attachedRigidbody.gameObject.GetInstanceID()))
+            {
+                Debug.Log(instanceElement.GetInstanceID() + "  interseccion con: "
+                + col.attachedRigidbody.gameObject.GetInstanceID());
+            }
+                
+        }
+        
     }
 
     private void SelectInstanceOfElement(GameObject gameObject)
     {
         instanceElement = GameController.instance.MapMosaic[gameObject.GetInstanceID()].ActionMosaic;
+        //instanceElement.GetComponent<BoxCollider2D>().isTrigger = false;
         deltaX = Camera.main.ScreenToWorldPoint(Input.mousePosition).x - transform.position.x;
         deltaY = Camera.main.ScreenToWorldPoint(Input.mousePosition).y - transform.position.y;
         elementInitPosition = instanceElement.transform.position;
         vecMinLimitDelta = new Vector3(minlimitDelta, minlimitDelta);
-        print("la posicion inicial del elemento: " + elementInitPosition + " - " + instanceElement.GetInstanceID());
+        Debug.Log("la posicion inicial del elemento: " + elementInitPosition + " - " + instanceElement.GetInstanceID() 
+            + "  " + instanceElement.GetComponent<BoxCollider2D>().isTrigger);
     }
 
     private void OnMouseDrag()
@@ -219,7 +233,8 @@ public class ActionController : MonoBehaviour
         if ((mousePosition.x <= elementInitPosition.x + 1 
              && mousePosition.x >= elementInitPosition.x - 1)
              && (mousePosition.y >= elementInitPosition.y - 1
-             && mousePosition.y <= elementInitPosition.y + 1))
+             && mousePosition.y <= elementInitPosition.y + 1)
+             && isReleased)
         {
             if (mousePosition.x > elementInitPosition.x + vecMinLimitDelta.x && isGoingRight)
             {
@@ -258,7 +273,10 @@ public class ActionController : MonoBehaviour
             isGoingUp = true;
             if (!isMatch)
             {
+                isReleased = false;
+                
                 BackElementToInitPosition();
+                instanceElement = null;
             }
         }
     }
@@ -269,6 +287,8 @@ public class ActionController : MonoBehaviour
         isGoingDown = true;
         isGoingRight = true;
         isGoingUp = true;
+        isReleased = true;
+
         if (!isMatch)
         {
             BackElementToInitPosition();
@@ -277,7 +297,10 @@ public class ActionController : MonoBehaviour
 
     public void BackElementToInitPosition()
     {
-        instanceElement.gameObject.transform.position = elementInitPosition;
+        if (instanceElement != null)
+        {
+            instanceElement.gameObject.transform.position = elementInitPosition;
+        }
     }
 
     private void SelectMovingRB(GameObject gameObject, int offset)
