@@ -8,6 +8,8 @@ public class ActionController : MonoBehaviour
 {
 
     private GameObject block;
+    private readonly int leftBound = -4;
+    private readonly int downBound = -4;
     private readonly int width = 5;
     private readonly int lowerHeight = 5;
     private readonly int height = 15;
@@ -47,14 +49,14 @@ public class ActionController : MonoBehaviour
         block = liFruits[liFruits.Length - 1];
 
         if (liFruits != null && liFruits.Length > 0)
-            for (int y = -4; y < height; ++y)
+            for (int y = downBound; y < height; ++y)
             {
-                for (int x = -4; x < width; ++x)
+                for (int x = leftBound; x < width; ++x)
                 {
                     GameObject fruit;
                     fruit = SelectRandomElement(liFruits);
 
-                    if (y<lowerHeight)
+                    if (y < lowerHeight)
                     {
                         Instantiate(block, new Vector3(x, y, 0), Quaternion.identity);
                         go = Instantiate(fruit, new Vector3(x, y, 0), Quaternion.identity);
@@ -176,7 +178,7 @@ public class ActionController : MonoBehaviour
     void OnMouseDown()
     {
         SelectInstanceOfElement(gameObject);
-        
+
         if (gameObject.name.Contains(GameController.instance.Apple.name))
         {
             Debug.Log(GameController.instance.Apple.name);
@@ -184,7 +186,7 @@ public class ActionController : MonoBehaviour
         else if (gameObject.name.Contains(GameController.instance.Banana.name))
         {
             Debug.Log(GameController.instance.Banana.name);
-            
+
         }
         else if (gameObject.name.Contains(GameController.instance.Cherry.name))
         {
@@ -202,17 +204,171 @@ public class ActionController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D col)
     {
-        if(instanceElement != null)
+        GameObject compareObj = col.attachedRigidbody.gameObject;
+        int res = 0;
+
+        if (instanceElement != null)
         {
             if (!instanceElement.GetInstanceID().
-            Equals(col.attachedRigidbody.gameObject.GetInstanceID()))
+            Equals(compareObj.GetInstanceID()))
             {
                 Debug.Log(instanceElement.GetInstanceID() + "  interseccion con: "
-                + col.attachedRigidbody.gameObject.GetInstanceID());
+                + compareObj.GetInstanceID());
+                res = Match3(instanceElement.tag, (int)compareObj.transform.position.x, (int)compareObj.transform.position.y);
+                Debug.Log("hay match con " + res + " elementos para el tag: " + instanceElement.tag);
+
+                //evalResponse(res);
+                if (res==3)
+                {
+
+                }
+                else if(res==4)
+                {
+
+                }else if (res == 5)
+                {
+
+                }else if (res >= 6)
+                {
+
+                }
             }
-                
         }
-        
+    }
+
+    private int Match3(String compareTag, int i, int j)
+    {
+        int rU, rD, rR, rL, res;
+        rU = rD = rR = rL = 0;
+        res = 1;
+
+        if(!isGoingDown)
+            rU = MatchLineChk(compareTag, i, j, 'U');
+        if (!isGoingUp)
+            rD = MatchLineChk(compareTag, i, j, 'D');
+        if (!isGoingLeft)
+            rR = MatchLineChk(compareTag, i, j, 'R');
+        if (!isGoingRight)
+            rL = MatchLineChk(compareTag, i, j, 'L');
+
+        if(isGoingRight || isGoingLeft)
+        {
+            res += rU + rD;
+            if (res >= 3)
+            {
+                if (isGoingRight)
+                {
+                    if (res >= 5 || rR>=2)
+                    {
+                        res += rR;
+                    }
+                    
+                }else if (isGoingLeft)
+                {
+                    if (res >= 5 || rL >= 2)
+                    {
+                        res += rL;
+                    }
+                }
+            }
+            else
+            {
+                res = 1;
+                if (rR>=2)
+                {
+                    res += rR;
+                }else if (rL >= 2)
+                {
+                    res += rL;
+                }
+            }
+        }
+        else if (isGoingUp || isGoingDown)
+        {
+            res += rR + rL;
+            if (res >= 3)
+            {
+                if (isGoingUp)
+                {
+                    if (res >= 5 || rU >= 2)
+                    {
+                        res += rU;
+                    }
+
+                }
+                else if (isGoingDown)
+                {
+                    if (res >= 5 || rD >= 2)
+                    {
+                        res += rD;
+                    }
+                }
+            }
+            else
+            {
+                res = 1;
+                if (rU >= 2)
+                {
+                    res += rU;
+                }
+                else if (rD >= 2)
+                {
+                    res =+ rD;
+                }
+            }
+        }
+
+        return res;
+    }
+
+    private int MatchLineChk(String compareTag, int i, int j, char direction)
+    {
+        direction = Char.ToUpper(direction);
+        switch (direction)
+        {
+            case 'U':
+                if (HasNext(compareTag, i, j + 1))
+                {
+                    return 1 + MatchLineChk(compareTag, i, j + 1, 'U');
+                }
+                break;
+            case 'D':
+                if (HasNext(compareTag, i, j - 1))
+                {
+                    return 1 + MatchLineChk(compareTag, i, j - 1, 'D');
+                }
+                break;
+            case 'R':
+                if (HasNext(compareTag, i + 1, j))
+                {
+                    return 1 + MatchLineChk(compareTag, i + 1, j, 'R');
+                }
+                break;
+            case 'L':
+                if (HasNext(compareTag, i - 1, j))
+                {
+                    return 1 + MatchLineChk(compareTag, i - 1, j, 'L');
+                }
+                break;
+            default:
+                break;
+        }
+
+        return 0;
+    }
+
+    private bool HasNext(String compareTag, int i, int j)
+    {
+        if (i>=leftBound && i<width && j>=downBound && j<lowerHeight)
+        {
+            int idObj = GameController.instance.MapPositions[i + "" + j].Id;
+            if (compareTag.Equals(GameController.instance.MapMosaic[idObj].ActionMosaic.tag))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void SelectInstanceOfElement(GameObject gameObject)
@@ -223,14 +379,14 @@ public class ActionController : MonoBehaviour
         deltaY = Camera.main.ScreenToWorldPoint(Input.mousePosition).y - transform.position.y;
         elementInitPosition = instanceElement.transform.position;
         vecMinLimitDelta = new Vector3(minlimitDelta, minlimitDelta);
-        Debug.Log("la posicion inicial del elemento: " + elementInitPosition + " - " + instanceElement.GetInstanceID() 
+        Debug.Log("la posicion inicial del elemento: " + elementInitPosition + " - " + instanceElement.GetInstanceID()
             + "  " + instanceElement.GetComponent<BoxCollider2D>().isTrigger);
     }
 
     private void OnMouseDrag()
     {
         mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        if ((mousePosition.x <= elementInitPosition.x + 1 
+        if ((mousePosition.x <= elementInitPosition.x + 1
              && mousePosition.x >= elementInitPosition.x - 1)
              && (mousePosition.y >= elementInitPosition.y - 1
              && mousePosition.y <= elementInitPosition.y + 1)
@@ -249,7 +405,8 @@ public class ActionController : MonoBehaviour
                 isGoingDown = false;
                 isGoingRight = false;
                 instanceElement.transform.position = new Vector3(elementInitPosition.x, mousePosition.y - deltaY, 0);
-            }else if(mousePosition.x < elementInitPosition.x - vecMinLimitDelta.x && isGoingLeft)
+            }
+            else if (mousePosition.x < elementInitPosition.x - vecMinLimitDelta.x && isGoingLeft)
             {
                 isGoingDown = false;
                 isGoingRight = false;
@@ -263,7 +420,7 @@ public class ActionController : MonoBehaviour
                 isGoingLeft = false;
                 instanceElement.transform.position = new Vector3(elementInitPosition.x, mousePosition.y - deltaY, 0);
             }
-            
+
         }
         else
         {
@@ -274,7 +431,7 @@ public class ActionController : MonoBehaviour
             if (!isMatch)
             {
                 isReleased = false;
-                
+
                 BackElementToInitPosition();
                 instanceElement = null;
             }

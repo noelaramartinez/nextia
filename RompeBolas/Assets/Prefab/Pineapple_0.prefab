@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 1501694595619765731}
   m_Layer: 0
   m_Name: Pineapple_0
-  m_TagString: Untagged
+  m_TagString: Pineapple
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
