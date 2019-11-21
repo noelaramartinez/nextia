@@ -29,6 +29,8 @@ public class ActionController : MonoBehaviour
     private bool isGoingLeft = true;
     private bool isGoingDown = true;
     private bool isReleased = true;
+    private List<Vector2> VliToDestroy = new List<Vector2>();
+    private List<Vector2> HliToDestroy = new List<Vector2>();
     public static ActionController instance;
 
     public ActionController()
@@ -118,22 +120,22 @@ public class ActionController : MonoBehaviour
         switch (r)
         {
             case 0:
-                element = liElements[(int)fruits.Apple];
+                element = liElements[(int)Fruits.Apple];
                 break;
             case 1:
-                element = liElements[(int)fruits.Banana];
+                element = liElements[(int)Fruits.Banana];
                 break;
             case 2:
-                element = liElements[(int)fruits.Cherry];
+                element = liElements[(int)Fruits.Cherry];
                 break;
             case 3:
-                element = liElements[(int)fruits.Orange];
+                element = liElements[(int)Fruits.Orange];
                 break;
             case 4:
-                element = liElements[(int)fruits.Strawberry];
+                element = liElements[(int)Fruits.Strawberry];
                 break;
             default:
-                element = liElements[(int)fruits.Strawberry];
+                element = liElements[(int)Fruits.Strawberry];
                 break;
         }
 
@@ -214,72 +216,171 @@ public class ActionController : MonoBehaviour
             {
                 Debug.Log(instanceElement.GetInstanceID() + "  interseccion con: "
                 + compareObj.GetInstanceID());
-                res = Match3(instanceElement.tag, (int)compareObj.transform.position.x, (int)compareObj.transform.position.y);
+                Match3(instanceElement.tag, (int)compareObj.transform.position.x, (int)compareObj.transform.position.y, 1);
                 Debug.Log("hay match con " + res + " elementos para el tag: " + instanceElement.tag);
+                Match3(compareObj.tag, (int)elementInitPosition.x, (int)elementInitPosition.y, 2);
+                Debug.Log("hay match con " + res + " elementos para el tag: " + compareObj.tag);
+
+
+                foreach(Vector2 v2 in HliToDestroy)
+                {
+                    Debug.Log("las coordenadas de los elementos para elminar horizontalvec: " + v2);
+
+                }
+
+                foreach(Vector2 v2 in VliToDestroy)
+                {
+                    Debug.Log("las coordenadas de los elementos para elminar vericalvec: " + v2);
+                }
 
                 //evalResponse(res);
-                if (res==3)
+                if (res == 3)
                 {
 
                 }
-                else if(res==4)
-                {
-
-                }else if (res == 5)
-                {
-
-                }else if (res >= 6)
+                else if (res == 4)
                 {
 
                 }
+                else if (res == 5)
+                {
+
+                }
+                else if (res >= 6)
+                {
+
+                }
+
+                //antes delimpiar los arreglos se deben eliminar los elementos corresepondientes de los maps y otras 
+                //colecciones que se ayan utilizado.
+                VliToDestroy.Clear();
+                HliToDestroy.Clear();
             }
         }
     }
 
-    private int Match3(String compareTag, int i, int j)
+    private void Match3(String compareTag, int i, int j, int step)
     {
+        Vector2 v2U;
+        Vector2 v2D;
+        Vector2 v2R;
+        Vector2 v2L;
         int rU, rD, rR, rL, res;
         rU = rD = rR = rL = 0;
         res = 1;
 
-        if(!isGoingDown)
-            rU = MatchLineChk(compareTag, i, j, 'U');
-        if (!isGoingUp)
-            rD = MatchLineChk(compareTag, i, j, 'D');
-        if (!isGoingLeft)
+        if (isGoingDown)
+        {
+            if(step == 1)
+            {
+                rD = MatchLineChk(compareTag, i, j, 'D');
+                rU = MatchLineChk(compareTag, i, j + 1, 'U');
+            }
+            else
+            {
+                rD = MatchLineChk(compareTag, i, j - 1, 'D');
+                rU = MatchLineChk(compareTag, i, j, 'U');
+            }
             rR = MatchLineChk(compareTag, i, j, 'R');
-        if (!isGoingRight)
             rL = MatchLineChk(compareTag, i, j, 'L');
+        }
+        else if (isGoingUp)
+        {
+            if (step == 1)
+            {
+                rD = MatchLineChk(compareTag, i, j - 1, 'D');
+                rU = MatchLineChk(compareTag, i, j, 'U');
+            }
+            else
+            {
+                rD = MatchLineChk(compareTag, i, j, 'D');
+                rU = MatchLineChk(compareTag, i, j + 1, 'U');
+            }
+            rR = MatchLineChk(compareTag, i, j, 'R');
+            rL = MatchLineChk(compareTag, i, j, 'L');
+        }
+        else if (isGoingRight)
+        {
+            if (step == 1)
+            {
+                rR = MatchLineChk(compareTag, i, j, 'R');
+                rL = MatchLineChk(compareTag, i-1, j, 'L');
+            }
+            else
+            {
+                rR = MatchLineChk(compareTag, i+1, j, 'R');
+                rL = MatchLineChk(compareTag, i, j, 'L');
+            }
+            rU = MatchLineChk(compareTag, i, j, 'U');
+            rD = MatchLineChk(compareTag, i, j, 'D');
+        }
+        else if (isGoingLeft)
+        {
+            if (step == 1)
+            {
+                rR = MatchLineChk(compareTag, i + 1, j, 'R');
+                rL = MatchLineChk(compareTag, i, j, 'L');
+            }
+            else
+            {
+                rR = MatchLineChk(compareTag, i, j, 'R');
+                rL = MatchLineChk(compareTag, i - 1, j, 'L');
+            }
+            rU = MatchLineChk(compareTag, i, j, 'U');
+            rD = MatchLineChk(compareTag, i, j, 'D');
+        }
 
-        if(isGoingRight || isGoingLeft)
+        //if (!isGoingDown)
+        //rU = MatchLineChk(compareTag, i, j, 'U');
+        //if (!isGoingUp)
+        ///rD = MatchLineChk(compareTag, i, j, 'D');
+        //if (!isGoingLeft)
+        //rR = MatchLineChk(compareTag, i, j, 'R');
+        //if (!isGoingRight)
+        //rL = MatchLineChk(compareTag, i, j, 'L');
+
+        if (isGoingRight || isGoingLeft)
         {
             res += rU + rD;
             if (res >= 3)
             {
+                v2U = new Vector2(i,j+rU);
+                v2D = new Vector2(i,j-rD);
+                VliToDestroy.Add(v2U);
+                VliToDestroy.Add(v2D);
                 if (isGoingRight)
                 {
-                    if (res >= 5 || rR>=2)
+                    if (res >= 5 || rR >= 2)
                     {
-                        res += rR;
+                        v2R = new Vector2(i+rR, j);
+                        HliToDestroy.Add(new Vector2(i,j));
+                        HliToDestroy.Add(v2R);
                     }
-                    
-                }else if (isGoingLeft)
+                }
+                else if (isGoingLeft)
                 {
                     if (res >= 5 || rL >= 2)
                     {
-                        res += rL;
+                        v2L = new Vector2(i - rL, j);
+                        HliToDestroy.Add(new Vector2(i, j));
+                        HliToDestroy.Add(v2L);
                     }
                 }
             }
             else
             {
                 res = 1;
-                if (rR>=2)
+                if (rR >= 2)
                 {
-                    res += rR;
-                }else if (rL >= 2)
+                    v2R = new Vector2(i + rR, j);
+                    HliToDestroy.Add(new Vector2(i, j));
+                    HliToDestroy.Add(v2R);
+                }
+                else if (rL >= 2)
                 {
-                    res += rL;
+                    v2L = new Vector2(i - rL, j);
+                    HliToDestroy.Add(new Vector2(i, j));
+                    HliToDestroy.Add(v2L);
                 }
             }
         }
@@ -288,11 +389,17 @@ public class ActionController : MonoBehaviour
             res += rR + rL;
             if (res >= 3)
             {
+                v2R = new Vector2(i + rR, j);
+                v2L = new Vector2(i - rL, j);
+                HliToDestroy.Add(v2R);
+                HliToDestroy.Add(v2L);
                 if (isGoingUp)
                 {
                     if (res >= 5 || rU >= 2)
                     {
-                        res += rU;
+                        v2U = new Vector2(i, j + rU);
+                        VliToDestroy.Add(new Vector2(i, j));
+                        VliToDestroy.Add(v2U);
                     }
 
                 }
@@ -300,25 +407,28 @@ public class ActionController : MonoBehaviour
                 {
                     if (res >= 5 || rD >= 2)
                     {
-                        res += rD;
+                        v2D = new Vector2(i, j - rD);
+                        VliToDestroy.Add(new Vector2(i, j));
+                        VliToDestroy.Add(v2D);
                     }
                 }
             }
             else
             {
-                res = 1;
                 if (rU >= 2)
                 {
-                    res += rU;
+                    v2U = new Vector2(i, j + rU);
+                    VliToDestroy.Add(new Vector2(i, j));
+                    VliToDestroy.Add(v2U);
                 }
                 else if (rD >= 2)
                 {
-                    res =+ rD;
+                    v2D = new Vector2(i, j - rD);
+                    VliToDestroy.Add(new Vector2(i, j));
+                    VliToDestroy.Add(v2D);
                 }
             }
         }
-
-        return res;
     }
 
     private int MatchLineChk(String compareTag, int i, int j, char direction)
@@ -359,7 +469,7 @@ public class ActionController : MonoBehaviour
 
     private bool HasNext(String compareTag, int i, int j)
     {
-        if (i>=leftBound && i<width && j>=downBound && j<lowerHeight)
+        if (i >= leftBound && i < width && j >= downBound && j < lowerHeight)
         {
             int idObj = GameController.instance.MapPositions[i + "" + j].Id;
             if (compareTag.Equals(GameController.instance.MapMosaic[idObj].ActionMosaic.tag))
@@ -470,7 +580,7 @@ public class ActionController : MonoBehaviour
         GameController.instance.ElementInstance = ab.ActionMosaic;
     }
 
-    private enum fruits
+    private enum Fruits
     {
         Apple, Banana, Cherry, Orange, Strawberry
     }
